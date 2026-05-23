@@ -2,6 +2,8 @@ package com.edwinkesuma.springedmastore.features.payment.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.order.domain.entity.Order;
+import com.edwinkesuma.springedmastore.features.payment.domain.enums.PaymentGateway;
+import com.edwinkesuma.springedmastore.features.payment.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;

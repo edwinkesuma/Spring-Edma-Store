@@ -1,6 +1,7 @@
 package com.edwinkesuma.springedmastore.features.product.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
+import com.edwinkesuma.springedmastore.features.product.domain.enums.CategoryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;

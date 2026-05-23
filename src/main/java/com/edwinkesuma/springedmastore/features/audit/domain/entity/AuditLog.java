@@ -1,25 +1,18 @@
 package com.edwinkesuma.springedmastore.features.audit.domain.entity;
 
+import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "audit_logs")
 @Getter
 @Setter
-public class AuditLog {
-
-    @Id
-    @GeneratedValue
-    private UUID id;
+public class AuditLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -47,7 +40,4 @@ public class AuditLog {
 
     @Column(columnDefinition = "TEXT")
     private String userAgent;
-
-    @CreationTimestamp
-    private Instant createdAt;
 }

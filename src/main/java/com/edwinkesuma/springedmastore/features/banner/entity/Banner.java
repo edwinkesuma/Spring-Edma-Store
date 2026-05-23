@@ -1,9 +1,11 @@
 package com.edwinkesuma.springedmastore.features.banner.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
+import com.edwinkesuma.springedmastore.features.banner.enums.BannerRedirectType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;

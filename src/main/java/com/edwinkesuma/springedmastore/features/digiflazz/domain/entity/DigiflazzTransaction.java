@@ -1,6 +1,7 @@
 package com.edwinkesuma.springedmastore.features.digiflazz.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
+import com.edwinkesuma.springedmastore.features.digiflazz.domain.enums.DigiflazzTransactionStatus;
 import com.edwinkesuma.springedmastore.features.order.domain.entity.OrderItem;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

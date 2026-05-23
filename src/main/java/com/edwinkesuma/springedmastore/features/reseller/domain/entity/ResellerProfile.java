@@ -1,5 +1,6 @@
 package com.edwinkesuma.springedmastore.features.reseller.domain.entity;
 
+import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -17,11 +18,7 @@ import java.util.UUID;
 @Table(name = "reseller_profiles")
 @Getter
 @Setter
-public class ResellerProfile {
-
-    @Id
-    @GeneratedValue
-    private UUID id;
+public class ResellerProfile extends BaseEntity {
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY)

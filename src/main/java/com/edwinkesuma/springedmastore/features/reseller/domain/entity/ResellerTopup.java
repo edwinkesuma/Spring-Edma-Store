@@ -1,6 +1,7 @@
 package com.edwinkesuma.springedmastore.features.reseller.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
+import com.edwinkesuma.springedmastore.features.reseller.domain.enums.ResellerTopupStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
