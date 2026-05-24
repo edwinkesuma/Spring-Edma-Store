@@ -8,6 +8,7 @@ import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import com.edwinkesuma.springedmastore.features.user.domain.enums.UserRole;
 import com.edwinkesuma.springedmastore.features.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,6 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
     @Override
     public ResponseRegisterDTO execute(RequestRegisterDTO request) {
-
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UserAlreadyExistsException("Email already used");
-        }
-
-        if (userRepository.existsByUsername(request.username())) {
-            throw new UserAlreadyExistsException("Username already used");
-        }
 
         User
                 user =
@@ -44,7 +37,12 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         user.setPasswordHash(passwordEncoder.encode(request.password()));
 
         // Save user
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UserAlreadyExistsException("Username already exists");
+        }
 
         var userDto = new UserDTO(
                 savedUser.getId(),
