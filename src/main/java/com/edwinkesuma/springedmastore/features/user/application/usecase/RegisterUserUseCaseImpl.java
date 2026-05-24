@@ -2,12 +2,13 @@ package com.edwinkesuma.springedmastore.features.user.application.usecase;
 
 import com.edwinkesuma.springedmastore.common.exception.UserAlreadyExistsException;
 import com.edwinkesuma.springedmastore.features.user.application.dto.RequestRegisterDTO;
-
 import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseRegisterDTO;
+import com.edwinkesuma.springedmastore.features.user.application.dto.UserDTO;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import com.edwinkesuma.springedmastore.features.user.domain.enums.UserRole;
 import com.edwinkesuma.springedmastore.features.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,15 +46,19 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         // Save user
         User savedUser = userRepository.save(user);
 
-        return new ResponseRegisterDTO(
+        var userDto = new UserDTO(
                 savedUser.getId(),
                 savedUser.getUsername(),
                 savedUser.getEmail(),
                 savedUser.getPhone(),
                 savedUser.getRole().name(),
                 savedUser.isActive(),
-                "User registered successfully",
                 savedUser.getCreatedAt()
+        );
+
+        return new ResponseRegisterDTO(
+                HttpStatus.CREATED.getReasonPhrase(),
+                userDto
         );
     }
 }

@@ -64,9 +64,9 @@ class RegisterUserUseCaseImplTest {
 
         assertNotNull(response);
 
-        assertEquals("edwin123", response.username());
-        assertEquals("edwin@gmail.com", response.email());
-        assertEquals("CUSTOMER", response.role());
+        assertEquals("edwin123", response.user().username());
+        assertEquals("edwin@gmail.com", response.user().email());
+        assertEquals("CUSTOMER", response.user().role());
 
         verify(userRepository).save(any(User.class));
     }
