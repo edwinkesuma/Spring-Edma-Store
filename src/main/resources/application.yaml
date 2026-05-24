@@ -33,9 +33,9 @@ management:
       show-details: when-authorized
 
 jwt:
-  secret:${JWT_SECRET}
-  access-expiration:${JWT_ACCESS_EXPIRATION}
-  refresh-expiration:${JWT_REFRESH_EXPIRATION}
+  secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
 info:
   app:
