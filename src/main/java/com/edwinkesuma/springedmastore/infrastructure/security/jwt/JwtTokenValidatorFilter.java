@@ -10,7 +10,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,16 +26,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-@RequiredArgsConstructor
+@Component
 public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-    @Qualifier("publicPaths")
     private final List<String> publicPaths;
+    private final String jwtSecret;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    public JwtTokenValidatorFilter(
+            @Qualifier("publicPaths") List<String> publicPaths,
+            @Value("${jwt.secret}") String jwtSecret
+    ) {
+        this.publicPaths = publicPaths;
+        this.jwtSecret = jwtSecret;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

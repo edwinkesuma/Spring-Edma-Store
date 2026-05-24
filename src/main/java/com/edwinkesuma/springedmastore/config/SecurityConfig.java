@@ -40,7 +40,8 @@ public class SecurityConfig {
     private final List<String> adminPaths;
 
     @Bean
-    SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain customSecurityFilterChain(HttpSecurity http,
+                                                  JwtTokenValidatorFilter jwtTokenValidatorFilter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(corsConfig -> corsConfig.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(
@@ -48,7 +49,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable);
 
-        http.addFilterBefore(new JwtTokenValidatorFilter(publicPaths), BasicAuthenticationFilter.class);
+        http.addFilterBefore(jwtTokenValidatorFilter, BasicAuthenticationFilter.class);
 
         http.authorizeHttpRequests(requests -> {
             publicPaths.forEach(path -> {
