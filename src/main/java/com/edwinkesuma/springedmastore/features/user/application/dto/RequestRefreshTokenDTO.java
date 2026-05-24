@@ -1,9 +1,6 @@
 package com.edwinkesuma.springedmastore.features.user.application.dto;
 
-public record ResponseLoginDTO(
-        String message,
-        UserDTO user,
-        String accessToken,
+public record RequestRefreshTokenDTO(
         String refreshToken
 ) {
 }

@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +37,16 @@ public class LoginUserUseCaseImpl implements LoginUserUseCase {
                             )
                     );
 
-            String jwtToken = jwtUtil.generateJwtToken(resultAuth);
-
             var loggedInUser = (User) resultAuth.getPrincipal();
+
+            List<String> roles =
+                    resultAuth.getAuthorities()
+                            .stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .toList();
+
+            String accessToken = jwtUtil.generateAccessToken(loggedInUser, roles);
+            String refreshToken = jwtUtil.generateRefreshToken(loggedInUser);
 
             var userDto = new UserDTO(
                     loggedInUser.getId(),
@@ -51,7 +61,8 @@ public class LoginUserUseCaseImpl implements LoginUserUseCase {
             return new ResponseLoginDTO(
                     HttpStatus.OK.getReasonPhrase(),
                     userDto,
-                    jwtToken
+                    accessToken,
+                    refreshToken
             );
 
         } catch (AuthenticationException e) {

@@ -1,10 +1,8 @@
 package com.edwinkesuma.springedmastore.features.user.presentation;
 
-import com.edwinkesuma.springedmastore.features.user.application.dto.RequestLoginDTO;
-import com.edwinkesuma.springedmastore.features.user.application.dto.RequestRegisterDTO;
-import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseLoginDTO;
-import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseRegisterDTO;
+import com.edwinkesuma.springedmastore.features.user.application.dto.*;
 import com.edwinkesuma.springedmastore.features.user.application.usecase.LoginUserUseCase;
+import com.edwinkesuma.springedmastore.features.user.application.usecase.RefreshTokenUseCase;
 import com.edwinkesuma.springedmastore.features.user.application.usecase.RegisterUserUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ResponseRegisterDTO> register(@Valid @RequestBody RequestRegisterDTO dto) {
@@ -38,5 +40,12 @@ public class AuthController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody RequestRefreshTokenDTO request) {
+        String newAccessToken = refreshTokenUseCase.execute(request.refreshToken());
+
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 }
