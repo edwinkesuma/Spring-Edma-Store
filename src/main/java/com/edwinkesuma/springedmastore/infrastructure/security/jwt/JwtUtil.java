@@ -92,6 +92,12 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+
+        return (List<String>) claims.get("roles");
+    }
+
     public String extractTokenType(String token) {
         return extractAllClaims(token)
                 .get("type", String.class);

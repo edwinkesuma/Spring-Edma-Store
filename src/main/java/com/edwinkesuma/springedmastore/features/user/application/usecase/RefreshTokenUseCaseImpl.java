@@ -7,6 +7,8 @@ import com.edwinkesuma.springedmastore.infrastructure.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
@@ -26,8 +28,13 @@ public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
 
         String email = jwtUtil.extractUsername(refreshToken);
 
-        User user = userRepository.findUserByEmail(email).orElseThrow();
+        List<String> roles = jwtUtil.extractRoles(refreshToken);
 
-        return jwtUtil.generateRefreshToken(user);
+        User
+                user =
+                userRepository.findUserByEmail(email)
+                        .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
+
+        return jwtUtil.generateAccessToken(user, roles);
     }
 }
