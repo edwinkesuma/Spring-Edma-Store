@@ -6,6 +6,7 @@ import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseLog
 import com.edwinkesuma.springedmastore.features.user.application.dto.UserDTO;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import com.edwinkesuma.springedmastore.features.user.domain.repository.UserRepository;
+import com.edwinkesuma.springedmastore.infrastructure.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,7 @@ public class LoginUserUseCaseImpl implements LoginUserUseCase {
 
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     @Override
     public ResponseLoginDTO execute(RequestLoginDTO request) {
@@ -32,6 +34,7 @@ public class LoginUserUseCaseImpl implements LoginUserUseCase {
                             )
                     );
 
+            String jwtToken = jwtUtil.generateJwtToken(resultAuth);
 
             var loggedInUser = (User) resultAuth.getPrincipal();
 
@@ -47,7 +50,8 @@ public class LoginUserUseCaseImpl implements LoginUserUseCase {
 
             return new ResponseLoginDTO(
                     HttpStatus.OK.getReasonPhrase(),
-                    userDto
+                    userDto,
+                    jwtToken
             );
 
         } catch (AuthenticationException e) {

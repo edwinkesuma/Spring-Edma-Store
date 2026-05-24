@@ -32,6 +32,10 @@ management:
     health:
       show-details: when-authorized
 
+jwt:
+  secret:${JWT_SECRET}
+  expiration:${JWT_EXPIRATION}
+
 info:
   app:
     name: spring-edma-store
