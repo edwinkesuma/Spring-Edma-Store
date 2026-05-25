@@ -3,7 +3,6 @@ package com.edwinkesuma.springedmastore.features.wallet.domain.entity;
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -24,7 +23,6 @@ import java.math.BigDecimal;
 @Builder
 public class Wallet extends BaseEntity {
 
-    @NotNull
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
@@ -33,21 +31,15 @@ public class Wallet extends BaseEntity {
     )
     private User user;
 
-    @NotBlank
-    @Size(max = 10)
     @Column(nullable = false, length = 10)
     @Builder.Default
     private String currency = "IDR";
 
-    @NotNull
-    @DecimalMin(value = "0.00")
-    @Digits(integer = 17, fraction = 2)
     @Column(nullable = false, precision = 19, scale = 2)
     @Setter(AccessLevel.NONE)
     @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 
-    @NotNull
     @Column(name = "is_frozen", nullable = false)
     @Builder.Default
     private Boolean isFrozen = false;
@@ -111,11 +103,34 @@ public class Wallet extends BaseEntity {
         }
 
         if (amount.scale() > 2) {
-            throw new IllegalArgumentException("Amount cannot have more than 2 decimal places");
+            throw new IllegalArgumentException(
+                    "Amount cannot have more than 2 decimal places"
+            );
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
+            throw new IllegalArgumentException(
+                    "Amount must be greater than zero"
+            );
         }
+    }
+
+    /*
+     * =========================
+     * FACTORY
+     * =========================
+     */
+    public static Wallet create(User user) {
+
+        if (user == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return Wallet.builder()
+                .user(user)
+                .currency("IDR")
+                .balance(BigDecimal.ZERO)
+                .isFrozen(false)
+                .build();
     }
 }

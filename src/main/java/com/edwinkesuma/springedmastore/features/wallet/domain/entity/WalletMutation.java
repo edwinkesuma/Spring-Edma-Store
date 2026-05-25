@@ -1,11 +1,11 @@
 package com.edwinkesuma.springedmastore.features.wallet.domain.entity;
 
-import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
+import com.edwinkesuma.springedmastore.common.entity.ImmutableEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -24,37 +24,39 @@ import java.math.BigDecimal;
         }
 )
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WalletMutation extends BaseEntity {
+public class WalletMutation extends ImmutableEntity {
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
-    @NotNull
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "transaction_id", nullable = false)
     private WalletTransaction transaction;
 
-    @NotNull
-    @Digits(integer = 17, fraction = 2)
-    @DecimalMin(value = "0.00")
-    @Column(name = "balance_before", nullable = false, precision = 19, scale = 2)
+    @Column(
+            name = "balance_before",
+            nullable = false,
+            precision = 19,
+            scale = 2
+    )
     private BigDecimal balanceBefore;
 
-    @NotNull
-    @Digits(integer = 17, fraction = 2)
-    @DecimalMin(value = "0.01")
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(
+            nullable = false,
+            precision = 19,
+            scale = 2
+    )
     private BigDecimal amount;
 
-    @NotNull
-    @Digits(integer = 17, fraction = 2)
-    @DecimalMin(value = "0.00")
-    @Column(name = "balance_after", nullable = false, precision = 19, scale = 2)
+    @Column(
+            name = "balance_after",
+            nullable = false,
+            precision = 19,
+            scale = 2
+    )
     private BigDecimal balanceAfter;
 }

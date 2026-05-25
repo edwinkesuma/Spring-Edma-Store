@@ -5,7 +5,6 @@ import com.edwinkesuma.springedmastore.features.wallet.domain.enums.TransactionD
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletTransactionStatus;
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletTransactionType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -36,19 +35,15 @@ import java.util.UUID;
         }
 )
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class WalletTransaction extends BaseEntity {
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
-    @NotBlank
-    @Size(max = 100)
     @Column(
             name = "transaction_code",
             nullable = false,
@@ -57,39 +52,30 @@ public class WalletTransaction extends BaseEntity {
     )
     private String transactionCode;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private WalletTransactionType type;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private WalletTransactionStatus status;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private TransactionDirection direction;
 
-    @NotNull
-    @DecimalMin(value = "0.01")
-    @Digits(integer = 17, fraction = 2)
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Size(max = 30)
     @Column(name = "reference_type", length = 30)
     private String referenceType;
 
     @Column(name = "reference_id")
     private UUID referenceId;
 
-    @Size(max = 100)
     @Column(name = "external_reference", length = 100)
     private String externalReference;
 
-    @Size(max = 1000)
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -112,14 +98,28 @@ public class WalletTransaction extends BaseEntity {
     }
 
     public void markSuccess() {
+        validatePendingState();
+
         this.status = WalletTransactionStatus.SUCCESS;
     }
 
     public void markFailed() {
+        validatePendingState();
+
         this.status = WalletTransactionStatus.FAILED;
     }
 
     public void markCancelled() {
+        validatePendingState();
+
         this.status = WalletTransactionStatus.CANCELLED;
+    }
+
+    private void validatePendingState() {
+        if (this.status != WalletTransactionStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Only pending transaction can be updated"
+            );
+        }
     }
 }
