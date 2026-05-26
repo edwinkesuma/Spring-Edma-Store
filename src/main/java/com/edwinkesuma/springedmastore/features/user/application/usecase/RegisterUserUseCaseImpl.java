@@ -7,20 +7,25 @@ import com.edwinkesuma.springedmastore.features.user.application.dto.UserDTO;
 import com.edwinkesuma.springedmastore.features.user.domain.entity.User;
 import com.edwinkesuma.springedmastore.features.user.domain.enums.UserRole;
 import com.edwinkesuma.springedmastore.features.user.domain.repository.UserRepository;
+import com.edwinkesuma.springedmastore.features.wallet.domain.entity.Wallet;
+import com.edwinkesuma.springedmastore.features.wallet.domain.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
     private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public ResponseRegisterDTO execute(RequestRegisterDTO request) {
 
         User
@@ -28,13 +33,11 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                 User.builder()
                         .username(request.username())
                         .email(request.email())
+                        .passwordHash(passwordEncoder.encode(request.password()))
                         .phone(request.phone())
                         .isActive(true)
                         .role(UserRole.CUSTOMER)
                         .build();
-
-        // Hash user password before saving it
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
 
         // Save user
         User savedUser;
@@ -43,6 +46,10 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("Username already exists");
         }
+
+        // ADD WALLET
+        Wallet wallet = Wallet.create(savedUser);
+        walletRepository.save(wallet);
 
         var userDto = new UserDTO(
                 savedUser.getId(),

@@ -2,6 +2,7 @@ package com.edwinkesuma.springedmastore.features.user.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.user.domain.enums.UserRole;
+import com.edwinkesuma.springedmastore.features.wallet.domain.entity.Wallet;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,4 +33,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isActive = true;
+
+    @OneToOne(
+            mappedBy = "user"
+    )
+    private Wallet wallet;
 }
