@@ -43,13 +43,13 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         User savedUser;
         try {
             savedUser = userRepository.save(user);
-
-            // ADD WALLET
-            Wallet wallet = Wallet.create(savedUser);
-            walletRepository.save(wallet);
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("Username already exists");
         }
+
+        // ADD WALLET
+        Wallet wallet = Wallet.create(savedUser);
+        walletRepository.save(wallet);
 
         var userDto = new UserDTO(
                 savedUser.getId(),
