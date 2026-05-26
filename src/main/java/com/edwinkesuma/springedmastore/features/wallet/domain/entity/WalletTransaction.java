@@ -2,6 +2,7 @@ package com.edwinkesuma.springedmastore.features.wallet.domain.entity;
 
 import com.edwinkesuma.springedmastore.common.entity.BaseEntity;
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.TransactionDirection;
+import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletReferenceType;
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletTransactionStatus;
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletTransactionType;
 import jakarta.persistence.*;
@@ -68,7 +69,9 @@ public class WalletTransaction extends BaseEntity {
     private BigDecimal amount;
 
     @Column(name = "reference_type", length = 30)
-    private String referenceType;
+    @Enumerated(EnumType.STRING)
+    private WalletReferenceType referenceType;
+
 
     @Column(name = "reference_id")
     private UUID referenceId;

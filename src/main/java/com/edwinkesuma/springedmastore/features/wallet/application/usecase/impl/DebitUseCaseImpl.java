@@ -1,13 +1,13 @@
 package com.edwinkesuma.springedmastore.features.wallet.application.usecase.impl;
 
 import com.edwinkesuma.springedmastore.common.exception.WalletNotFoundException;
-import com.edwinkesuma.springedmastore.features.wallet.application.dto.RequestTopUpDTO;
+import com.edwinkesuma.springedmastore.features.wallet.application.dto.RequestDebitDTO;
 import com.edwinkesuma.springedmastore.features.wallet.application.dto.ResponseWalletTransactionDTO;
 import com.edwinkesuma.springedmastore.features.wallet.application.factory.WalletMutationFactory;
 import com.edwinkesuma.springedmastore.features.wallet.application.factory.WalletTransactionFactory;
 import com.edwinkesuma.springedmastore.features.wallet.application.mapper.WalletTransactionMapper;
 import com.edwinkesuma.springedmastore.features.wallet.application.service.WalletHelper;
-import com.edwinkesuma.springedmastore.features.wallet.application.usecase.TopUpUseCase;
+import com.edwinkesuma.springedmastore.features.wallet.application.usecase.DebitUseCase;
 import com.edwinkesuma.springedmastore.features.wallet.domain.entity.Wallet;
 import com.edwinkesuma.springedmastore.features.wallet.domain.entity.WalletMutation;
 import com.edwinkesuma.springedmastore.features.wallet.domain.entity.WalletTransaction;
@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class TopUpUseCaseImpl implements TopUpUseCase {
+public class DebitUseCaseImpl implements DebitUseCase {
 
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
@@ -35,35 +35,34 @@ public class TopUpUseCaseImpl implements TopUpUseCase {
 
     @Override
     @Transactional
-    public ResponseWalletTransactionDTO execute(RequestTopUpDTO dto) {
-        walletHelper.validateAmount(dto.amount());
+    public ResponseWalletTransactionDTO execute(RequestDebitDTO request) {
+        walletHelper.validateAmount(request.amount());
 
         Wallet
                 wallet =
-                walletRepository.findByUserIdForUpdate(dto.userId())
-                        .orElseThrow(() -> new WalletNotFoundException(dto.userId()));
+                walletRepository.findByUserIdForUpdate(request.userId())
+                        .orElseThrow(() -> new WalletNotFoundException(request.userId()));
 
-        BigDecimal balanceBefore = wallet.getBalance();
+
+        // VALIDATE BALANCE
+        walletHelper.validateSufficientBalance(wallet, request.amount());
+
 
         // UPDATE BALANCE
-        wallet.credit(dto.amount());
-
+        BigDecimal balanceBefore = wallet.getBalance();
+        wallet.debit(request.amount());
         BigDecimal balanceAfter = wallet.getBalance();
 
         // CREATE TRANSACTION
-        WalletTransaction
-                walletTransaction = walletTransactionFactory.createCredit(wallet, dto);
-
-
-        walletTransactionRepository.save(walletTransaction);
+        WalletTransaction transaction = walletTransactionFactory.createDebit(wallet, request);
+        walletTransactionRepository.save(transaction);
 
         // CREATE MUTATION
         WalletMutation
                 mutation =
-                walletMutationFactory.create(wallet, walletTransaction, balanceBefore, dto.amount(), balanceAfter);
-
+                walletMutationFactory.create(wallet, transaction, balanceBefore, request.amount(), balanceAfter);
         walletMutationRepository.save(mutation);
 
-        return walletTransactionMapper.toDTO(walletTransaction);
+        return walletTransactionMapper.toDTO(transaction);
     }
 }

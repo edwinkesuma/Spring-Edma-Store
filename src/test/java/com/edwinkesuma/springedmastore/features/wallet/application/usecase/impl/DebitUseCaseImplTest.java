@@ -1,7 +1,8 @@
 package com.edwinkesuma.springedmastore.features.wallet.application.usecase.impl;
 
+import com.edwinkesuma.springedmastore.common.exception.InsufficientBalanceException;
 import com.edwinkesuma.springedmastore.common.exception.WalletNotFoundException;
-import com.edwinkesuma.springedmastore.features.wallet.application.dto.RequestTopUpDTO;
+import com.edwinkesuma.springedmastore.features.wallet.application.dto.RequestDebitDTO;
 import com.edwinkesuma.springedmastore.features.wallet.application.dto.ResponseWalletTransactionDTO;
 import com.edwinkesuma.springedmastore.features.wallet.application.factory.WalletMutationFactory;
 import com.edwinkesuma.springedmastore.features.wallet.application.factory.WalletTransactionFactory;
@@ -11,6 +12,7 @@ import com.edwinkesuma.springedmastore.features.wallet.domain.entity.Wallet;
 import com.edwinkesuma.springedmastore.features.wallet.domain.entity.WalletMutation;
 import com.edwinkesuma.springedmastore.features.wallet.domain.entity.WalletTransaction;
 import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletReferenceType;
+import com.edwinkesuma.springedmastore.features.wallet.domain.enums.WalletTransactionType;
 import com.edwinkesuma.springedmastore.features.wallet.domain.repository.WalletMutationRepository;
 import com.edwinkesuma.springedmastore.features.wallet.domain.repository.WalletRepository;
 import com.edwinkesuma.springedmastore.features.wallet.domain.repository.WalletTransactionRepository;
@@ -31,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TopUpUseCaseImplTest {
+class DebitUseCaseImplTest {
 
     @Mock
     private WalletRepository walletRepository;
@@ -55,7 +57,7 @@ class TopUpUseCaseImplTest {
     private WalletTransactionMapper walletTransactionMapper;
 
     @InjectMocks
-    private TopUpUseCaseImpl useCase;
+    private DebitUseCaseImpl useCase;
 
     private UUID userId;
     private UUID referenceId;
@@ -67,16 +69,17 @@ class TopUpUseCaseImplTest {
     }
 
     @Test
-    void execute_shouldTopUpSuccessfully() {
+    void execute_shouldDebitSuccessfully() {
         // GIVEN
-        BigDecimal amount = BigDecimal.valueOf(100000);
+        BigDecimal amount = BigDecimal.valueOf(10000);
 
-        RequestTopUpDTO request =
-                new RequestTopUpDTO(
+        RequestDebitDTO request =
+                new RequestDebitDTO(
                         userId,
                         amount,
-                        "Top up saldo",
-                        WalletReferenceType.PAYMENT_GATEWAY_TRANSACTION,
+                        WalletTransactionType.PAYMENT,
+                        "Buy product",
+                        WalletReferenceType.WALLET_TRANSACTION,
                         referenceId
                 );
 
@@ -103,7 +106,7 @@ class TopUpUseCaseImplTest {
         when(walletRepository.findByUserIdForUpdate(userId))
                 .thenReturn(Optional.of(wallet));
 
-        when(walletTransactionFactory.createCredit(wallet, request))
+        when(walletTransactionFactory.createDebit(wallet, request))
                 .thenReturn(transaction);
 
         when(walletMutationFactory.create(
@@ -111,7 +114,7 @@ class TopUpUseCaseImplTest {
                 eq(transaction),
                 eq(BigDecimal.valueOf(50000)),
                 eq(amount),
-                eq(BigDecimal.valueOf(150000))
+                eq(BigDecimal.valueOf(40000))
         )).thenReturn(mutation);
 
         when(walletTransactionMapper.toDTO(transaction))
@@ -124,9 +127,10 @@ class TopUpUseCaseImplTest {
         assertThat(result).isEqualTo(response);
 
         assertThat(wallet.getBalance())
-                .isEqualByComparingTo(BigDecimal.valueOf(150000));
+                .isEqualByComparingTo(BigDecimal.valueOf(40000));
 
         verify(walletHelper).validateAmount(amount);
+        verify(walletHelper).validateSufficientBalance(wallet, amount);
 
         verify(walletTransactionRepository).save(transaction);
         verify(walletMutationRepository).save(mutation);
@@ -135,14 +139,15 @@ class TopUpUseCaseImplTest {
     }
 
     @Test
-    void execute_shouldThrowEntityNotFoundException_whenWalletNotFound() {
+    void execute_shouldThrowWalletNotFoundException_whenWalletNotFound() {
         // GIVEN
-        RequestTopUpDTO request =
-                new RequestTopUpDTO(
+        RequestDebitDTO request =
+                new RequestDebitDTO(
                         userId,
-                        BigDecimal.valueOf(100000),
-                        "Top up saldo",
-                        WalletReferenceType.PAYMENT_GATEWAY_TRANSACTION,
+                        BigDecimal.valueOf(10000),
+                        WalletTransactionType.PAYMENT,
+                        "Payment",
+                        WalletReferenceType.WALLET_TRANSACTION,
                         referenceId
                 );
 
@@ -155,6 +160,9 @@ class TopUpUseCaseImplTest {
 
         verify(walletHelper).validateAmount(request.amount());
 
+        verify(walletHelper, never())
+                .validateSufficientBalance(any(), any());
+
         verify(walletTransactionRepository, never())
                 .save(any());
 
@@ -163,42 +171,40 @@ class TopUpUseCaseImplTest {
     }
 
     @Test
-    void execute_shouldUpdateWalletBalanceCorrectly() {
+    void execute_shouldThrowException_whenBalanceInsufficient() {
         // GIVEN
-        BigDecimal initialBalance = BigDecimal.valueOf(250000);
-        BigDecimal topUpAmount = BigDecimal.valueOf(50000);
+        BigDecimal amount = BigDecimal.valueOf(100000);
 
-        RequestTopUpDTO request =
-                new RequestTopUpDTO(
+        RequestDebitDTO request =
+                new RequestDebitDTO(
                         userId,
-                        topUpAmount,
-                        "Top up test",
-                        WalletReferenceType.PAYMENT_GATEWAY_TRANSACTION,
+                        amount,
+                        WalletTransactionType.PAYMENT,
+                        "Payment",
+                        WalletReferenceType.WALLET_TRANSACTION,
                         referenceId
                 );
 
         Wallet wallet =
                 Wallet.builder()
-                        .balance(initialBalance)
-                        .build();
-
-        WalletTransaction transaction =
-                WalletTransaction.builder()
-                        .wallet(wallet)
-                        .amount(topUpAmount)
+                        .balance(BigDecimal.valueOf(50000))
                         .build();
 
         when(walletRepository.findByUserIdForUpdate(userId))
                 .thenReturn(Optional.of(wallet));
 
-        when(walletTransactionFactory.createCredit(wallet, request))
-                .thenReturn(transaction);
+        doThrow(new InsufficientBalanceException(wallet.getId(), wallet.getBalance(), amount))
+                .when(walletHelper)
+                .validateSufficientBalance(wallet, amount);
 
-        // WHEN
-        useCase.execute(request);
+        // WHEN & THEN
+        assertThatThrownBy(() -> useCase.execute(request))
+                .isInstanceOf(InsufficientBalanceException.class);
 
-        // THEN
-        assertThat(wallet.getBalance())
-                .isEqualByComparingTo(BigDecimal.valueOf(300000));
+        verify(walletTransactionRepository, never())
+                .save(any());
+
+        verify(walletMutationRepository, never())
+                .save(any());
     }
 }

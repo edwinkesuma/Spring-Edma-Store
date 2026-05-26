@@ -1,5 +1,7 @@
-package com.edwinkesuma.springedmastore.features.user.domain.service;
+package com.edwinkesuma.springedmastore.features.wallet.application.service;
 
+import com.edwinkesuma.springedmastore.common.exception.InsufficientBalanceException;
+import com.edwinkesuma.springedmastore.features.wallet.domain.entity.Wallet;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -28,5 +30,18 @@ public class WalletHelper {
 
     public String generateTransactionCode() {
         return "TXN-" + UUID.randomUUID();
+    }
+
+    public void validateSufficientBalance(
+            Wallet wallet,
+            BigDecimal amount
+    ) {
+        if (!wallet.hasSufficientBalance(amount)) {
+            throw new InsufficientBalanceException(
+                    wallet.getId(),
+                    wallet.getBalance(),
+                    amount
+            );
+        }
     }
 }
