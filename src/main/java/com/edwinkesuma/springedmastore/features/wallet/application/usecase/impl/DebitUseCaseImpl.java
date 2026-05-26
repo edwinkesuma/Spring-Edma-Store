@@ -63,8 +63,14 @@ public class DebitUseCaseImpl implements DebitUseCase {
                 walletMutationFactory.create(wallet, transaction, balanceBefore, request.amount(), balanceAfter);
         walletMutationRepository.save(mutation);
 
-        ResponseWalletTransactionDTO transactionDTO = walletTransactionMapper.toDTO(transaction);
+        ResponseWalletTransactionDTO
+                transactionDTO =
+                walletTransactionMapper.toDTO(transaction);
 
-        return transactionDTO.builder().balanceAfter(balanceAfter).balanceBefore(balanceBefore).currency("IDR").build();
+        return transactionDTO.toBuilder()
+                .balanceBefore(balanceBefore)
+                .balanceAfter(balanceAfter)
+                .currency("IDR")
+                .build();
     }
 }

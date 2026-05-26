@@ -66,6 +66,10 @@ public class TopUpUseCaseImpl implements TopUpUseCase {
 
         ResponseWalletTransactionDTO transactionDTO = walletTransactionMapper.toDTO(walletTransaction);
 
-        return transactionDTO.builder().balanceAfter(balanceAfter).balanceBefore(balanceBefore).currency("IDR").build();
+        return transactionDTO.toBuilder()
+                .balanceBefore(balanceBefore)
+                .balanceAfter(balanceAfter)
+                .currency("IDR")
+                .build();
     }
 }
