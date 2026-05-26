@@ -16,6 +16,7 @@ public record RequestDebitDTO(
         @Positive
         BigDecimal amount,
 
+        @NotNull
         WalletTransactionType transactionType,
 
         String description,
