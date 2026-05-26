@@ -64,6 +64,8 @@ public class TopUpUseCaseImpl implements TopUpUseCase {
 
         walletMutationRepository.save(mutation);
 
-        return walletTransactionMapper.toDTO(walletTransaction);
+        ResponseWalletTransactionDTO transactionDTO = walletTransactionMapper.toDTO(walletTransaction);
+
+        return transactionDTO.builder().balanceAfter(balanceAfter).balanceBefore(balanceBefore).currency("IDR").build();
     }
 }
