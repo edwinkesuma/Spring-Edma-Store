@@ -34,14 +34,20 @@ public class CloudinaryStorageService
             Map<?, ?> result = cloudinary.uploader()
                     .upload(file.getBytes(), options);
 
+            Object secureUrlObj = result.get("secure_url");
+            Object publicIdObj = result.get("public_id");
+
+            if (secureUrlObj == null || publicIdObj == null) {
+                throw new FileUploadException("Failed to upload image to Cloudinary");
+            }
+
             return new ResponseUploadFileDTO(
-                    result.get("secure_url").toString(),
-                    result.get("public_id").toString()
+                    secureUrlObj.toString(),
+                    publicIdObj.toString()
             );
 
         } catch (IOException e) {
-            throw new FileUploadException("Failed to upload file to Cloudinary",
-                    e);
+            throw new FileUploadException("Failed to upload file to Cloudinary");
         }
     }
 
