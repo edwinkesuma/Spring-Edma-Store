@@ -1,5 +1,6 @@
 package com.edwinkesuma.springedmastore.features.user.application.usecase;
 
+import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceException;
 import com.edwinkesuma.springedmastore.common.exception.UserAlreadyExistsException;
 import com.edwinkesuma.springedmastore.features.user.application.dto.RequestRegisterDTO;
 import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseRegisterDTO;
@@ -109,7 +110,7 @@ class RegisterUserUseCaseImplTest {
                 .thenReturn(true);
 
         assertThrows(
-                UserAlreadyExistsException.class,
+                DuplicateResourceException.class,
                 () -> registerUserUseCase.execute(request)
         );
 

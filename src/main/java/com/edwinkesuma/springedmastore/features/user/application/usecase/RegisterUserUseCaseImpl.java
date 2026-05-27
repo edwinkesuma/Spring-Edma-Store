@@ -44,7 +44,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         try {
             savedUser = userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            throw new UserAlreadyExistsException("Username already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         // ADD WALLET

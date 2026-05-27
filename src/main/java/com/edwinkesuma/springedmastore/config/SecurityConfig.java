@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -55,9 +56,9 @@ public class SecurityConfig {
             publicPaths.forEach(path -> {
                 requests.requestMatchers(path).permitAll();
             });
-//            publicGetPaths.forEach(path -> {
-//                requests.requestMatchers(HttpMethod.GET, path).permitAll();
-//            });
+            publicGetPaths.forEach(path -> {
+                requests.requestMatchers(HttpMethod.GET, path).permitAll();
+            });
             adminPaths.forEach(path -> {
                 requests.requestMatchers(path).hasRole("ADMIN");
             });
