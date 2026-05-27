@@ -12,6 +12,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<?> handleInvalidFile(
+            InvalidFileException ex
+    ) {
+
+        return ResponseEntity.status(400)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFound(
             ResourceNotFoundException ex

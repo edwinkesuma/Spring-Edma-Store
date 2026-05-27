@@ -1,6 +1,7 @@
 package com.edwinkesuma.springedmastore.features.product.application.usecase.impl.category;
 
 import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceException;
+import com.edwinkesuma.springedmastore.common.exception.InvalidFileException;
 import com.edwinkesuma.springedmastore.common.util.SlugUtil;
 import com.edwinkesuma.springedmastore.features.common.storage.application.dto.ResponseUploadFileDTO;
 import com.edwinkesuma.springedmastore.features.common.storage.infrastructure.cloudinary.CloudinaryStorageService;
@@ -11,7 +12,6 @@ import com.edwinkesuma.springedmastore.features.product.application.usecase.cate
 import com.edwinkesuma.springedmastore.features.product.domain.entity.Category;
 import com.edwinkesuma.springedmastore.features.product.domain.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +26,7 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
 
     @Override
     public ResponseCategoryDTO execute(RequestCreateCategoryDTO request,
-                                       MultipartFile image) throws BadRequestException {
+                                       MultipartFile image) {
 
         String slug = SlugUtil.toSlug(request.name());
 
@@ -35,11 +35,11 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
         }
 
         if (image == null || image.isEmpty()) {
-            throw new BadRequestException("Product image is required");
+            throw new InvalidFileException("Category image is required");
         }
 
         if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
-            throw new BadRequestException("Invalid image file");
+            throw new InvalidFileException("Invalid image file");
         }
 
         Category category = categoryMapper.createCategoryDTOtoEntity(request);

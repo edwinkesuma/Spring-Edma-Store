@@ -8,7 +8,6 @@ import com.edwinkesuma.springedmastore.features.product.application.usecase.cate
 import com.edwinkesuma.springedmastore.features.product.application.usecase.category.UpdateCategoryUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class AdminCategoryController {
     @PostMapping
     public ResponseEntity<ResponseCategoryDTO> createCategory(@Valid @RequestPart("category") RequestCreateCategoryDTO categoryDTO,
                                                               @RequestPart("image") MultipartFile image
-    ) throws BadRequestException {
+    ) {
         ResponseCategoryDTO response = createCategoryUseCase.execute(categoryDTO, image);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -39,13 +38,13 @@ public class AdminCategoryController {
     public ResponseEntity<ResponseCategoryDTO> updateCategory(@Valid @RequestPart("category") RequestUpdateCategoryDTO categoryDTO,
                                                               @RequestPart(value = "image", required = false) MultipartFile image,
                                                               @PathVariable UUID categoryId
-    ) throws BadRequestException {
+    ) {
         ResponseCategoryDTO response = updateCategoryUseCase.execute(categoryDTO, categoryId, image);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{categoryId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID categoryId) throws BadRequestException {
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID categoryId) {
         deleteCategoryUseCase.execute(categoryId);
         return ResponseEntity.noContent().build();
     }

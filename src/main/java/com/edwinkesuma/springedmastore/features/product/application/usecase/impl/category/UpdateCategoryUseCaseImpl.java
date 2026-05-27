@@ -1,6 +1,7 @@
 package com.edwinkesuma.springedmastore.features.product.application.usecase.impl.category;
 
 import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceException;
+import com.edwinkesuma.springedmastore.common.exception.InvalidFileException;
 import com.edwinkesuma.springedmastore.common.exception.ResourceNotFoundException;
 import com.edwinkesuma.springedmastore.common.util.SlugUtil;
 import com.edwinkesuma.springedmastore.features.common.storage.application.dto.ResponseUploadFileDTO;
@@ -12,7 +13,6 @@ import com.edwinkesuma.springedmastore.features.product.application.usecase.cate
 import com.edwinkesuma.springedmastore.features.product.domain.entity.Category;
 import com.edwinkesuma.springedmastore.features.product.domain.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +29,7 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
     @Override
     public ResponseCategoryDTO execute(RequestUpdateCategoryDTO request,
                                        UUID categoryId,
-                                       MultipartFile image) throws BadRequestException {
+                                       MultipartFile image) {
         Category
                 category =
                 categoryRepository.findById(categoryId)
@@ -41,7 +41,7 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
 
         if (image != null && !image.isEmpty()) {
             if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
-                throw new BadRequestException("Invalid image file");
+                throw new InvalidFileException("Invalid image file");
             }
 
             if (category.getIconPublicId() != null) {
