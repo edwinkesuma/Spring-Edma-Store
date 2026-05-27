@@ -49,9 +49,12 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
         category.setIconPublicId(uploadedImage.publicId());
         category.setSlug(slug);
 
-
-        Category savedCategory = categoryRepository.save(category);
-
-        return categoryMapper.toCategoryDTO(savedCategory);
+        try {
+            Category savedCategory = categoryRepository.save(category);
+            return categoryMapper.toCategoryDTO(savedCategory);
+        } catch (RuntimeException ex) {
+            fileStorageService.deleteFile(uploadedImage.publicId());
+            throw ex;
+        }
     }
 }
