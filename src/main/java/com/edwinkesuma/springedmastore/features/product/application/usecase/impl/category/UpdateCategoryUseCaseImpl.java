@@ -5,7 +5,7 @@ import com.edwinkesuma.springedmastore.common.exception.InvalidFileException;
 import com.edwinkesuma.springedmastore.common.exception.ResourceNotFoundException;
 import com.edwinkesuma.springedmastore.common.util.SlugUtil;
 import com.edwinkesuma.springedmastore.features.common.storage.application.dto.ResponseUploadFileDTO;
-import com.edwinkesuma.springedmastore.features.common.storage.infrastructure.cloudinary.CloudinaryStorageService;
+import com.edwinkesuma.springedmastore.features.common.storage.application.service.FileStorageService;
 import com.edwinkesuma.springedmastore.features.product.application.dto.RequestUpdateCategoryDTO;
 import com.edwinkesuma.springedmastore.features.product.application.dto.ResponseCategoryDTO;
 import com.edwinkesuma.springedmastore.features.product.application.mapper.CategoryMapper;
@@ -24,7 +24,7 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final CloudinaryStorageService cloudinaryStorageService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public ResponseCategoryDTO execute(RequestUpdateCategoryDTO request,
@@ -41,27 +41,37 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
             throw new DuplicateResourceException("Category", "name", normalizedName);
         }
 
+        String oldIconPublicId = category.getIconPublicId();
+        ResponseUploadFileDTO uploadedImage = null;
+
         if (image != null && !image.isEmpty()) {
             if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
                 throw new InvalidFileException("Invalid image file");
             }
 
-            if (category.getIconPublicId() != null) {
-                cloudinaryStorageService.deleteFile(category.getIconPublicId());
-            }
-
-            ResponseUploadFileDTO uploadedImage = cloudinaryStorageService.uploadFile(image, "categories");
+            uploadedImage = fileStorageService.uploadFile(image, "categories");
 
             category.setIconUrl(uploadedImage.imageUrl());
             category.setIconPublicId(uploadedImage.publicId());
         }
-        
+
         category.setName(normalizedName);
         category.setSlug(newSlug);
 
         System.out.println(category.getIconUrl());
-        Category savedCategory = categoryRepository.save(category);
+        Category savedCategory;
+        try {
+            savedCategory = categoryRepository.save(category);
+        } catch (RuntimeException ex) {
+            if (uploadedImage != null) {
+                fileStorageService.deleteFile(uploadedImage.publicId());
+            }
+            throw ex;
+        }
 
+        if (uploadedImage != null && oldIconPublicId != null && !oldIconPublicId.isBlank()) {
+            fileStorageService.deleteFile(oldIconPublicId);
+        }
         return categoryMapper.toCategoryDTO(savedCategory);
     }
 }
