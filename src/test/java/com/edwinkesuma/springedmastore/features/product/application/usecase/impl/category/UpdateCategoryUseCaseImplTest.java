@@ -67,7 +67,7 @@ class UpdateCategoryUseCaseImplTest {
                 .thenReturn(Optional.of(category));
 
         when(categoryRepository.existsBySlugAndIdNot(
-                "food",
+                "updated-food",
                 categoryId
         )).thenReturn(false);
 
