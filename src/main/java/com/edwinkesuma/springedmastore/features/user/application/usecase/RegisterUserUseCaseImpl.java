@@ -1,6 +1,6 @@
 package com.edwinkesuma.springedmastore.features.user.application.usecase;
 
-import com.edwinkesuma.springedmastore.common.exception.UserAlreadyExistsException;
+import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceException;
 import com.edwinkesuma.springedmastore.features.user.application.dto.RequestRegisterDTO;
 import com.edwinkesuma.springedmastore.features.user.application.dto.ResponseRegisterDTO;
 import com.edwinkesuma.springedmastore.features.user.application.dto.UserDTO;
@@ -44,7 +44,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         try {
             savedUser = userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            throw new UserAlreadyExistsException("Username already exists");
+            throw new DuplicateResourceException("User", "user", "user already exists");
         }
 
         // ADD WALLET

@@ -1,0 +1,65 @@
+package com.edwinkesuma.springedmastore.features.product.application.usecase.impl.category;
+
+import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceException;
+import com.edwinkesuma.springedmastore.common.exception.ResourceNotFoundException;
+import com.edwinkesuma.springedmastore.common.util.SlugUtil;
+import com.edwinkesuma.springedmastore.features.common.storage.application.dto.ResponseUploadFileDTO;
+import com.edwinkesuma.springedmastore.features.common.storage.infrastructure.cloudinary.CloudinaryStorageService;
+import com.edwinkesuma.springedmastore.features.product.application.dto.RequestUpdateCategoryDTO;
+import com.edwinkesuma.springedmastore.features.product.application.dto.ResponseCategoryDTO;
+import com.edwinkesuma.springedmastore.features.product.application.mapper.CategoryMapper;
+import com.edwinkesuma.springedmastore.features.product.application.usecase.category.UpdateCategoryUseCase;
+import com.edwinkesuma.springedmastore.features.product.domain.entity.Category;
+import com.edwinkesuma.springedmastore.features.product.domain.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
+
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final CloudinaryStorageService cloudinaryStorageService;
+
+    @Override
+    public ResponseCategoryDTO execute(RequestUpdateCategoryDTO request,
+                                       UUID categoryId,
+                                       MultipartFile image) throws BadRequestException {
+        Category
+                category =
+                categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId));
+
+        if (categoryRepository.existsBySlugAndIdNot(category.getSlug(), categoryId)) {
+            throw new DuplicateResourceException("Category", "name", category.getSlug());
+        }
+
+        if (image != null && !image.isEmpty()) {
+            if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
+                throw new BadRequestException("Invalid image file");
+            }
+
+            if (category.getIconPublicId() != null) {
+                cloudinaryStorageService.deleteFile(category.getIconPublicId());
+            }
+
+            ResponseUploadFileDTO uploadedImage = cloudinaryStorageService.uploadFile(image, "categories");
+
+            category.setIconUrl(uploadedImage.imageUrl());
+            category.setIconPublicId(uploadedImage.publicId());
+        }
+
+        category.setName(request.name().trim());
+        category.setSlug(SlugUtil.toSlug(request.name().trim()));
+
+        System.out.println(category.getIconUrl());
+        Category savedCategory = categoryRepository.save(category);
+
+        return categoryMapper.toCategoryDTO(savedCategory);
+    }
+}
