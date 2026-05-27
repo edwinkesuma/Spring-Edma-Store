@@ -64,13 +64,21 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
             savedCategory = categoryRepository.save(category);
         } catch (RuntimeException ex) {
             if (uploadedImage != null) {
-                fileStorageService.deleteFile(uploadedImage.publicId());
+                try {
+                    fileStorageService.deleteFile(uploadedImage.publicId());
+                } catch (RuntimeException cleanupEx) {
+                    ex.addSuppressed(cleanupEx);
+                }
             }
             throw ex;
         }
 
         if (uploadedImage != null && oldIconPublicId != null && !oldIconPublicId.isBlank()) {
-            fileStorageService.deleteFile(oldIconPublicId);
+            try {
+                fileStorageService.deleteFile(oldIconPublicId);
+            } catch (RuntimeException cleanupEx) {
+                // log and continue
+            }
         }
         return categoryMapper.toCategoryDTO(savedCategory);
     }
