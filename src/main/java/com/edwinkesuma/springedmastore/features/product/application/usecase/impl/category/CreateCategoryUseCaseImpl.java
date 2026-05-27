@@ -53,7 +53,11 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
             Category savedCategory = categoryRepository.save(category);
             return categoryMapper.toCategoryDTO(savedCategory);
         } catch (RuntimeException ex) {
-            fileStorageService.deleteFile(uploadedImage.publicId());
+            try {
+                fileStorageService.deleteFile(uploadedImage.publicId());
+            } catch (RuntimeException cleanupEx) {
+                ex.addSuppressed(cleanupEx);
+            }
             throw ex;
         }
     }
