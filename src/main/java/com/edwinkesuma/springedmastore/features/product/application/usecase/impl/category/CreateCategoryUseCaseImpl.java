@@ -4,7 +4,7 @@ import com.edwinkesuma.springedmastore.common.exception.DuplicateResourceExcepti
 import com.edwinkesuma.springedmastore.common.exception.InvalidFileException;
 import com.edwinkesuma.springedmastore.common.util.SlugUtil;
 import com.edwinkesuma.springedmastore.features.common.storage.application.dto.ResponseUploadFileDTO;
-import com.edwinkesuma.springedmastore.features.common.storage.infrastructure.cloudinary.CloudinaryStorageService;
+import com.edwinkesuma.springedmastore.features.common.storage.application.service.FileStorageService;
 import com.edwinkesuma.springedmastore.features.product.application.dto.RequestCreateCategoryDTO;
 import com.edwinkesuma.springedmastore.features.product.application.dto.ResponseCategoryDTO;
 import com.edwinkesuma.springedmastore.features.product.application.mapper.CategoryMapper;
@@ -22,7 +22,7 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    private final CloudinaryStorageService cloudinaryStorageService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public ResponseCategoryDTO execute(RequestCreateCategoryDTO request,
@@ -44,7 +44,7 @@ public class CreateCategoryUseCaseImpl implements CreateCategoryUseCase {
 
         Category category = categoryMapper.createCategoryDTOtoEntity(request);
 
-        ResponseUploadFileDTO uploadedImage = cloudinaryStorageService.uploadFile(image, "categories");
+        ResponseUploadFileDTO uploadedImage = fileStorageService.uploadFile(image, "categories");
         category.setIconUrl(uploadedImage.imageUrl());
         category.setIconPublicId(uploadedImage.publicId());
         category.setSlug(slug);
