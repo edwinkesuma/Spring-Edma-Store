@@ -12,6 +12,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<?> handleUserAlreadyExists(
+            UserAlreadyExistsException ex
+    ) {
+
+        return ResponseEntity.status(409)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
     @ExceptionHandler(InvalidFileException.class)
     public ResponseEntity<?> handleInvalidFile(
             InvalidFileException ex
