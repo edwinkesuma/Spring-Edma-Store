@@ -1,7 +1,7 @@
 package com.edwinkesuma.springedmastore.features.product.application.usecase.impl.category;
 
 import com.edwinkesuma.springedmastore.common.exception.ResourceNotFoundException;
-import com.edwinkesuma.springedmastore.features.common.storage.infrastructure.cloudinary.CloudinaryStorageService;
+import com.edwinkesuma.springedmastore.features.common.storage.application.service.FileStorageService;
 import com.edwinkesuma.springedmastore.features.product.application.usecase.category.DeleteCategoryUseCase;
 import com.edwinkesuma.springedmastore.features.product.domain.entity.Category;
 import com.edwinkesuma.springedmastore.features.product.domain.repository.CategoryRepository;
@@ -15,7 +15,7 @@ import java.util.UUID;
 public class DeleteCategoryUseCaseImpl implements DeleteCategoryUseCase {
 
     private final CategoryRepository categoryRepository;
-    private final CloudinaryStorageService cloudinaryStorageService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public void execute(UUID id) {
@@ -30,10 +30,11 @@ public class DeleteCategoryUseCaseImpl implements DeleteCategoryUseCase {
 //            );
 //        }
 
-        if (category.getIconPublicId() != null) {
-            cloudinaryStorageService.deleteFile(category.getIconPublicId());
-        }
-
+        String iconPublicId = category.getIconPublicId();
         categoryRepository.delete(category);
+
+        if (iconPublicId != null && !iconPublicId.isBlank()) {
+            fileStorageService.deleteFile(iconPublicId);
+        }
     }
 }
