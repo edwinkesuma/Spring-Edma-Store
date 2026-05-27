@@ -35,8 +35,10 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
                 categoryRepository.findById(categoryId)
                         .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId));
 
-        if (categoryRepository.existsBySlugAndIdNot(category.getSlug(), categoryId)) {
-            throw new DuplicateResourceException("Category", "name", category.getSlug());
+        String normalizedName = request.name().trim();
+        String newSlug = SlugUtil.toSlug(normalizedName);
+        if (categoryRepository.existsBySlugAndIdNot(newSlug, categoryId)) {
+            throw new DuplicateResourceException("Category", "name", normalizedName);
         }
 
         if (image != null && !image.isEmpty()) {
@@ -53,9 +55,9 @@ public class UpdateCategoryUseCaseImpl implements UpdateCategoryUseCase {
             category.setIconUrl(uploadedImage.imageUrl());
             category.setIconPublicId(uploadedImage.publicId());
         }
-
-        category.setName(request.name().trim());
-        category.setSlug(SlugUtil.toSlug(request.name().trim()));
+        
+        category.setName(normalizedName);
+        category.setSlug(newSlug);
 
         System.out.println(category.getIconUrl());
         Category savedCategory = categoryRepository.save(category);
