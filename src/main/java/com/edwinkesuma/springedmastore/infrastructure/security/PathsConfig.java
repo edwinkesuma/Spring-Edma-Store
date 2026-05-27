@@ -22,7 +22,8 @@ public class PathsConfig {
     @Bean(name = "publicGetPaths")
     public List<String> publicGetPaths() {
         return List.of(
-                ""
+                "/api/v1/categories/**",
+                "/api/v1/products/**"
         );
     }
 

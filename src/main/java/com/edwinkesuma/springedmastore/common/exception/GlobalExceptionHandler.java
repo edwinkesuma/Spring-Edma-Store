@@ -12,6 +12,48 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<?> handleResourceNotFound(
+            ResourceNotFoundException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(FileDeletionException.class)
+    public ResponseEntity<?> handleFileDeletion(
+            FileDeletionException ex
+    ) {
+
+        return ResponseEntity.status(500)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<?> handleFileUpload(
+            FileUploadException ex
+    ) {
+
+        return ResponseEntity.status(500)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<?> handleInvalidToken(
             InvalidTokenException ex
@@ -39,8 +81,8 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> handleDuplicate(UserAlreadyExistsException ex) {
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<?> handleDuplicate(DuplicateResourceException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(Map.of(
